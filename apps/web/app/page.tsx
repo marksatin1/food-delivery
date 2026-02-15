@@ -1,5 +1,5 @@
 import { fetchApi } from "@/lib/api";
-import { RestaurantCard } from "@/components/RestaurantCard";
+import { RestaurantCard } from "@/components/restaurant-card";
 import { Input } from "@/components/ui/input";
 import type { Restaurant } from "@food-delivery/shared";
 
