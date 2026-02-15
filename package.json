@@ -1,0 +1,22 @@
+{
+  "name": "food-delivery",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GrubHub clone - fullstack food delivery app",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm -w apps/web run dev",
+    "dev:backend": "npm -w apps/api run dev"
+  },
+  "author": "Mark Satin",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.3"
+  }
+}
