@@ -7,7 +7,19 @@ import { useCart } from "./cart-context";
 import type { MenuItem } from "@food-delivery/shared";
 
 export function MenuItemCard({ item }: { item: MenuItem }) {
-  const { addItem } = useCart();
+  const { addItem, replaceCart } = useCart();
+
+  function handleAddToCart() {
+    const result = addItem(item);
+    if (result === 'conflict') {
+      const confirmed = window.confirm(
+        "You already have items from another restaurant. Start a new order?"
+      );
+      if (confirmed) {
+        replaceCart(item);
+      }
+    }
+  }
 
   return (
     <Card className={`overflow-hidden ${!item.isAvailable ? "opacity-50" : ""}`}>
@@ -32,7 +44,7 @@ export function MenuItemCard({ item }: { item: MenuItem }) {
             <Button
               size="sm"
               disabled={!item.isAvailable}
-              onClick={() => addItem(item)}
+              onClick={handleAddToCart}
             >
               {item.isAvailable ? "Add to Cart" : "Unavailable"}
             </Button>

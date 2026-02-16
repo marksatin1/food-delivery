@@ -5,7 +5,9 @@ import type { MenuItem, OrderItem } from "@food-delivery/shared";
 
 interface CartContextType {
   items: OrderItem[];
-  addItem: (menuItem: MenuItem) => void;
+  restaurantId: string | null;
+  addItem: (menuItem: MenuItem) => 'added' | 'conflict';
+  replaceCart: (menuItem: MenuItem) => void;
   removeItem: (menuItemId: string) => void;
   updateQuantity: (menuItemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -17,28 +19,49 @@ const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<OrderItem[]>([]);
+  const [restaurantId, setRestaurantId] = useState<string | null>(null);
 
-  const addItem = useCallback((menuItem: MenuItem) => {
+  const addItem = useCallback((menuItem: MenuItem): 'added' | 'conflict' => {
+    // Check if cart has items from a different restaurant
+    if (restaurantId && restaurantId !== menuItem.restaurantId) {
+      return 'conflict';
+    }
+
+    setRestaurantId(menuItem.restaurantId);
     setItems((prev) => {
       const existing = prev.find((i) => i.menuItem.id === menuItem.id);
       if (existing) {
-        return prev.map((i) => 
+        return prev.map((i) =>
           i.menuItem.id === menuItem.id
-        ? { ...i, quantity: i.quantity + 1 }
-        : i  
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
         );
       }
       return [...prev, { menuItem, quantity: 1 }];
-    })
+    });
+    return 'added';
+  }, [restaurantId]);
+
+  const replaceCart = useCallback((menuItem: MenuItem) => {
+    setRestaurantId(menuItem.restaurantId);
+    setItems([{ menuItem, quantity: 1 }]);
   }, []);
 
   const removeItem = useCallback((menuItemId: string) => {
-    setItems((prev) => prev.filter((i) => i.menuItem.id !== menuItemId));
+    setItems((prev) => {
+      const next = prev.filter((i) => i.menuItem.id !== menuItemId);
+      if (next.length === 0) setRestaurantId(null);
+      return next;
+    });
   }, []);
 
   const updateQuantity = useCallback((menuItemId: string, quantity: number) => {
     if (quantity <= 0) {
-      setItems((prev) => prev.filter((i) => i.menuItem.id !== menuItemId));
+      setItems((prev) => {
+        const next = prev.filter((i) => i.menuItem.id !== menuItemId);
+        if (next.length === 0) setRestaurantId(null);
+        return next;
+      });
       return;
     }
     setItems((prev) =>
@@ -50,6 +73,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = useCallback(() => {
     setItems([]);
+    setRestaurantId(null);
   }, []);
 
   const totalItems = useMemo(
@@ -63,11 +87,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ items, addItem, removeItem, updateQuantity, clearCart, totalItems, subtotal }),
-    [items, addItem, removeItem, updateQuantity, clearCart, totalItems, subtotal]
+    () => ({ items, restaurantId, addItem, replaceCart, removeItem, updateQuantity, clearCart, totalItems, subtotal }),
+    [items, restaurantId, addItem, replaceCart, removeItem, updateQuantity, clearCart, totalItems, subtotal]
   );
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
