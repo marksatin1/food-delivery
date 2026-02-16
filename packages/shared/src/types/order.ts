@@ -1,6 +1,6 @@
-import { MenuItem } from "./menu";
+import { MenuItem } from "./menu.js";
 
-export type OrderStatus = 
+export type OrderStatus =
   | "pending"
   | "confirmed"
   | "preparing"
