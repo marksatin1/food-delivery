@@ -3,9 +3,12 @@
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { useCart } from "./cart-context";
 import type { MenuItem } from "@food-delivery/shared";
 
 export function MenuItemCard({ item }: { item: MenuItem }) {
+  const { addItem } = useCart();
+
   return (
     <Card className={`overflow-hidden ${!item.isAvailable ? "opacity-50" : ""}`}>
       <div className="flex">
@@ -29,6 +32,7 @@ export function MenuItemCard({ item }: { item: MenuItem }) {
             <Button
               size="sm"
               disabled={!item.isAvailable}
+              onClick={() => addItem(item)}
             >
               {item.isAvailable ? "Add to Cart" : "Unavailable"}
             </Button>
