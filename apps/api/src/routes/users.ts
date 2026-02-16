@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express";
-import { users } from "../data/seed";
+import { users } from "../data/seed.js";
+import type { User } from "@food-delivery/shared";
 
 const router = Router();
 
@@ -10,7 +11,7 @@ router.get('/', (_req: Request, res: Response) => {
 
 // Get one user by id
 router.get('/:id', (req: Request, res: Response) => {
-  const user = users.find((u) => u.id === req.params.id);
+  const user = users.find((u: User) => u.id === req.params.id);
 
   if (!user) {
     res.status(404).json({ error: 'User not found' });
