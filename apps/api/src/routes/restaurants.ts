@@ -3,8 +3,21 @@ import { restaurants, menuItems } from "../data/seed.js";
 
 const router = Router();
 
-// Get all restaurants
-router.get('/', (_req: Request, res: Response) => {
+// Get all restaurants (with optional query)
+router.get('/', (req: Request, res: Response) => {
+  const query = req.query.q;
+
+  if (typeof query === 'string' && query.trim() !== '') {
+    const q = query.toLowerCase();
+    const filtered = restaurants.filter((r) =>
+      r.name.toLowerCase().includes(q) ||
+      r.description.toLowerCase().includes(q) ||
+      r.cuisine.some((c) => c.toLowerCase().includes(q))
+    );
+    res.json(filtered)
+    return;
+  }
+
   res.json(restaurants);
 });
 
