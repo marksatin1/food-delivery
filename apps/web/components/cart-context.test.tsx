@@ -28,9 +28,21 @@ const burger: MenuItem = {
   isAvailable: true,
 };
 
+const salad: MenuItem = {
+  id: "salad-1",
+  restaurantId: "r2",
+  name: "Salad",
+  description: "Caesar salad",
+  price: 11.99,
+  image: "https://example.com/salad.jpg",
+  category: "Appetizers",
+  isPopular: false,
+  isAvailable: true,
+};
+
 // Helper component that exposes cart actions as buttons
 function CartConsumer() {
-  const { items, addItem, removeItem, updateQuantity, clearCart, totalItems, subtotal } = useCart();
+  const { items, addItem, removeItem, updateQuantity, clearCart, replaceCart, totalItems, subtotal } = useCart();
 
   return (
     <div>
@@ -44,6 +56,8 @@ function CartConsumer() {
       <button onClick={() => updateQuantity(pizza.id, 5)}>Set Pizza Qty 5</button>
       <button onClick={() => updateQuantity(pizza.id, 0)}>Set Pizza Qty 0</button>
       <button onClick={() => clearCart()}>Clear</button>
+      <button onClick={() => addItem(salad)}>Add Salad</button>
+      <button onClick={() => replaceCart(salad)}>Replace With Salad</button>
 
       {items.map((i) => (
         <p key={i.menuItem.id} data-testid={`qty-${i.menuItem.id}`}>
@@ -165,5 +179,31 @@ describe("CartContext", () => {
     );
 
     spy.mockRestore();
+  });
+
+  it("returns 'conflict' when adding item from a different restaurant", async () => {
+    const user = userEvent.setup();
+    renderWithProvider();
+
+    await user.click(screen.getByText("Add Pizza"));     // restaurantId: "r1"
+    await user.click(screen.getByText("Add Salad"));      // restaurantId: "r2" — blocked
+
+    // Pizza should still be there, Other should not
+    expect(screen.getByTestId("total-items")).toHaveTextContent("1");
+    expect(screen.getByTestId("item-count")).toHaveTextContent("1");
+  });
+
+  it("replaces cart when replaceCart is called", async () => {
+    const user = userEvent.setup();
+    renderWithProvider();
+
+    await user.click(screen.getByText("Add Pizza"));
+    expect(screen.getByTestId("total-items")).toHaveTextContent("1");
+
+    await user.click(screen.getByText("Replace With Salad"));
+
+    expect(screen.getByTestId("total-items")).toHaveTextContent("1");
+    expect(screen.queryByTestId("qty-pizza-1")).not.toBeInTheDocument();
+    expect(screen.getByTestId("qty-salad-1")).toHaveTextContent("1");
   });
 });
