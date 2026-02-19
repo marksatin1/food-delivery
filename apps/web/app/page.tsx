@@ -10,7 +10,7 @@ export default async function HomePage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  const restaurants = await fetchApi<Restaurant[]>("/api/restaurants", q ? { q } : undefined);
+  const restaurants = await fetchApi<Restaurant[]>("/api/restaurants", q ? { params: { q } } : undefined);
 
   return (
     <div>
