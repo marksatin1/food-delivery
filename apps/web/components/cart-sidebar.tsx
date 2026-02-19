@@ -1,7 +1,11 @@
 'use client';
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { fetchApi } from "@/lib/api";
 import { useCart } from "./cart-context";
 import { Button } from "./ui/button";
+import type { Order } from "@food-delivery/shared";
 
 export function CartSidebar({
   isOpen,
@@ -11,6 +15,40 @@ export function CartSidebar({
   onClose: () => void;
 }) {
   const { items, removeItem, updateQuantity, clearCart, subtotal } = useCart();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  async function handleCheckout() {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const payload = {
+        userId: 'u1',
+        restaurantId: items[0]?.menuItem.restaurantId,
+        items: items.map(i => ({
+          item: { id: i.menuItem.id },
+          quantity: i.quantity
+        })),
+        deliveryFee: 3.99,
+        estimatedDelivery: new Date(Date.now() + 45 * 60000).toISOString(),
+      }
+
+      const order: Order = await fetchApi<Order>("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      clearCart();
+      router.push(`/order-confirmation?id=${order.id}`);
+    } catch (error: any) {
+      setError(error?.message || 'Failed to submit order');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -24,9 +62,8 @@ export function CartSidebar({
 
       {/* Sidebar panel */}
       <aside
-        className={`fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-xl transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-xl transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b p-4">
@@ -126,9 +163,10 @@ export function CartSidebar({
               Delivery fee and tax calculated at checkout
             </p>
 
-            <Button className="mt-4 w-full">
-              Checkout · ${subtotal.toFixed(2)}
+            <Button className="mt-4 w-full" onClick={handleCheckout} disabled={loading}>
+              {loading ? "Placing order..." : `Checkout · $${subtotal.toFixed(2)}`}
             </Button>
+            {error && <p className="mt-2 text-red-500 text-sm">{error}</p>}
 
             <Button
               variant="ghost"

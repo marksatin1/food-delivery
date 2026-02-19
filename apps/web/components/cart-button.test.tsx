@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CartButton } from "./cart-button";
@@ -16,6 +16,15 @@ const mockItem: MenuItem = {
   isPopular: false,
   isAvailable: true,
 };
+
+// Mock useRouter
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+}));
 
 function AddHelper() {
   const { addItem } = useCart();

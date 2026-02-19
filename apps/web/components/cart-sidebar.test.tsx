@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CartSidebar } from "./cart-sidebar";
 import { CartProvider, useCart } from "./cart-context";
-import type { MenuItem, OrderItem } from "@food-delivery/shared";
+import type { MenuItem } from "@food-delivery/shared";
 
 const mockPizza: MenuItem = {
   id: "pizza-1",
@@ -16,6 +16,15 @@ const mockPizza: MenuItem = {
   isPopular: true,
   isAvailable: true,
 };
+
+// Mock useRouter
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+}));
 
 // Helper: render sidebar with items already in the cart
 function renderSidebar(isOpen: boolean, onClose = vi.fn()) {
