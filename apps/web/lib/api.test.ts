@@ -29,7 +29,7 @@ describe('fetchApi', () => {
       json: async () => [],
     });
 
-    await fetchApi('/api/restaurants', { q: 'pizza', limit: '10' });
+    await fetchApi('/api/restaurants', { params: { q: 'pizza', limit: '10' } });
 
     const calledUrl = mockFetch.mock.calls[0][0];
     expect(calledUrl.toString()).toBe(
