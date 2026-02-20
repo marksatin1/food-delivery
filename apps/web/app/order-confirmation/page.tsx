@@ -3,7 +3,8 @@ import { OrderConfirmationDisplay } from "@/components/order-confirmation-displa
 import type { Order } from "@food-delivery/shared";
 
 export default async function OrderConfirmationPage({ searchParams }: { searchParams: { id?: string } }) {
-  const orderId = searchParams.id;
+  const params = await searchParams;
+  const orderId = params.id;
 
   if (!orderId) {
     return <div className="p-8 text-center text-red-500">No order ID provided.</div>;
