@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { menuItems } from "../data/seed.js";
-import type { Order } from "@food-delivery/shared";
+import type { OrderItem, Order } from "@food-delivery/shared";
 
 const orders: Order[] = [];
 
@@ -23,11 +23,11 @@ router.post('/', (req: Request, res: Response) => {
   }
 
   if (!deliveryFee) {
-    return res.status(400).json({ error: 'Delivery Fee field is invalid'});
+    return res.status(400).json({ error: 'Delivery Fee field is invalid' });
   }
 
   if (!estimatedDelivery) {
-    return res.status(400).json({ error: 'Estimated Delivery field is invalid'});
+    return res.status(400).json({ error: 'Estimated Delivery field is invalid' });
   }
 
   // Determine final prices
@@ -44,11 +44,16 @@ router.post('/', (req: Request, res: Response) => {
   const tax = subtotal * 0.08875;
   const total = subtotal + deliveryFee + tax;
 
+  const orderItems: OrderItem[] = items.map(({ item, quantity }) => {
+    const menuData = menuItems.find((m) => m.id === item.id)!;
+    return { menuItem: menuData, quantity };
+  });
+
   const order: Order = {
     id: Date.now().toString(),
     userId,
     restaurantId,
-    items,
+    items: orderItems,
     status: 'pending',
     subtotal: Number(subtotal.toFixed(2)),
     deliveryFee,
