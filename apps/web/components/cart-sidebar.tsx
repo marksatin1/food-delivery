@@ -27,7 +27,7 @@ export function CartSidebar({
       const payload = {
         userId: 'u1',
         restaurantId: items[0]?.menuItem.restaurantId,
-        items: items.map(i => ({
+        items: items.map(i => ({        // Extract just item ID and quantity; use that info to look up rest of item data on backend
           item: { id: i.menuItem.id },
           quantity: i.quantity
         })),

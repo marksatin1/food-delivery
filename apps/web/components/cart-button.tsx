@@ -14,7 +14,7 @@ export function CartButton() {
       <Button
         variant='ghost'
         size='sm'
-        className='relative'
+        className='relative text-lg cursor-pointer'
         onClick={() => setIsOpen(true)}
       >
         🛒

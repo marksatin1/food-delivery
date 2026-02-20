@@ -11,8 +11,8 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "FoodDash | Food Delivery",
-  description: "Order food from the best local restaurants",
+  title: "FoodFrenzy | Food Delivery",
+  description: "Order food from the best local restaurants at the speed of light!",
 };
 
 export default function RootLayout({
@@ -28,11 +28,11 @@ export default function RootLayout({
           {/* Navigation */}
           <header className="sticky top-0 z-50 border-b bg-white">
             <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-              <Link href="/" className="text-xl font-bold text-red-600">
-                FoodDash
+              <Link href="/" className="text-2xl font-bold text-red-600">
+                FoodFrenzy
               </Link>
               <div className="flex items-center gap-4">
-                <Link href="/" className="text-sm font-medium hover:text-red-600">
+                <Link href="/" className="text-lg font-medium hover:text-red-600">
                   Restaurants
                 </Link>
                 <CartButton />
