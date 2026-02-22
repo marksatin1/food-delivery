@@ -74,7 +74,7 @@ describe("Orders API", () => {
       .send({
         userId: "u1",
         restaurantId: "r1",
-        items: [{ item: { id: "some-valid-id" }, quantity: 1 }],
+        items: [{ item: { id: "08bd2c86-2d24-44da-ac49-9de0a0844595" }, quantity: 1 }],
         deliveryFee: 3.99,
         estimatedDelivery: "2026-02-18T18:00:00.000Z"
       });
