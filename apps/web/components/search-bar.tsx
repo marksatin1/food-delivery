@@ -9,6 +9,7 @@ export function SearchBar() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') ?? '');
 
+  // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
       if (query.trim()) {
