@@ -14,8 +14,7 @@ router.get('/', (req: Request, res: Response) => {
       r.description.toLowerCase().includes(q) ||
       r.cuisine.some((c) => c.toLowerCase().includes(q))
     );
-    res.json(filtered)
-    return;
+    return res.json(filtered)
   }
 
   res.json(restaurants);
@@ -26,8 +25,7 @@ router.get('/:id', (req: Request, res: Response) => {
   const restaurant = restaurants.find((r) => r.id === req.params.id);
 
   if (!restaurant) {
-    res.status(404).json({ error: 'Restaurant not found' });
-    return;
+    return res.status(404).json({ error: 'Restaurant not found' });
   }
 
   res.json(restaurant);
@@ -38,8 +36,7 @@ router.get('/:id/menu', (req: Request, res: Response) => {
   const restaurantMenuItems = menuItems.filter((i) => i.restaurantId === req.params.id);
 
   if (restaurantMenuItems.length === 0) {
-    res.status(404).json({ error: 'Menu items not found' });
-    return;
+    return res.status(404).json({ error: 'Menu items not found' });
   }
 
   res.json(restaurantMenuItems);

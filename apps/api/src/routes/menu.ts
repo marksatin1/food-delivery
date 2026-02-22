@@ -30,8 +30,7 @@ router.get('/:id', (req: Request, res: Response) => {
   const item = menuItems.find((i) => i.id === req.params.id);
 
   if (!item) {
-    res.status(404).json({ error: 'Menu item not found' });
-    return;
+    return res.status(404).json({ error: 'Menu item not found' });
   }
 
   res.json(item);
