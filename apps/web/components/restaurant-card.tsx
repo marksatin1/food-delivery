@@ -16,10 +16,10 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
           />
         </div>
 
-        <CardContent className="p-4">
+        <CardContent className="h-40 p-4">
           {/* Name and rating */}
           <div className="flex items-start justify-between">
-            <h3 className="font-semibold text-lg">{restaurant.name}</h3>
+            <h3 className="font-semibold text-xl">{restaurant.name}</h3>
             <span className="text-sm font-medium bg-green-100 text-green-800 px-2 py-0.5 rounded">
               ★ {restaurant.rating}
             </span>
@@ -28,7 +28,7 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
           {/* Cuisine tags */}
           <div className="mt-2 flex flex-wrap gap-1">
             {restaurant.cuisine.map((c) => (
-              <Badge key={c} variant="secondary" className="text-xs">
+              <Badge key={c} variant="secondary" className="text-sm">
                 {c}
               </Badge>
             ))}

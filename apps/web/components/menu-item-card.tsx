@@ -43,6 +43,7 @@ export function MenuItemCard({ item }: { item: MenuItem }) {
             <span className="font-semibold">${item.price.toFixed(2)}</span>
             <Button
               size="sm"
+              className="cursor-pointer"
               disabled={!item.isAvailable}
               onClick={handleAddToCart}
             >

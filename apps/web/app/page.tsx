@@ -25,7 +25,7 @@ export default async function HomePage({
       </section>
 
       {/* Search bar */}
-      {/* Suspense allows page to statically render while search params load in */}
+      {/* Suspense allows page to staticly render while search params load in */}
       <Suspense>
         <SearchBar />
       </Suspense>
@@ -40,7 +40,7 @@ export default async function HomePage({
             No restaurants found. Try a different search term.
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
             {restaurants.map((restaurant) => (
               <RestaurantCard key={restaurant.id} restaurant={restaurant} />
             ))}

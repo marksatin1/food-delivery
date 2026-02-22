@@ -30,7 +30,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ id:
         <div className="mt-4">
           <div className="flex items-start justify-between">
             <h1 className="text-3xl font-bold">{restaurant.name}</h1>
-            <span className="rounded bg-green-100 px-2 py-1 text-sm font-medium text-green-800">
+            <span className="rounded bg-green-300 px-2 py-1 text-sm font-medium text-green-800">
               ★ {restaurant.rating} ({restaurant.reviewCount} reviews)
             </span>
           </div>
