@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CartProvider, useCart } from "./cart-context";
@@ -77,8 +77,13 @@ function renderWithProvider() {
 }
 
 describe("CartContext", () => {
-  it("starts with an empty cart", () => {
-    renderWithProvider();
+  // Start each test with an empty cart in localStorage
+  beforeEach(() => {
+    if (global.localStorage.clear) global.localStorage.clear();
+  });
+
+  it("starts with an empty cart", async () => {
+    await act(async () => renderWithProvider());
 
     expect(screen.getByTestId("total-items")).toHaveTextContent("0");
     expect(screen.getByTestId("subtotal")).toHaveTextContent("0.00");
@@ -87,7 +92,7 @@ describe("CartContext", () => {
 
   it("adds a new item to the cart", async () => {
     const user = userEvent.setup();
-    renderWithProvider();
+    await act(async () => renderWithProvider());
 
     await user.click(screen.getByText("Add Pizza"));
 
@@ -98,7 +103,7 @@ describe("CartContext", () => {
 
   it("increments quantity when adding the same item twice", async () => {
     const user = userEvent.setup();
-    renderWithProvider();
+    await act(async () => renderWithProvider());
 
     await user.click(screen.getByText("Add Pizza"));
     await user.click(screen.getByText("Add Pizza"));
@@ -111,7 +116,7 @@ describe("CartContext", () => {
 
   it("tracks multiple different items", async () => {
     const user = userEvent.setup();
-    renderWithProvider();
+    await act(async () => renderWithProvider());
 
     await user.click(screen.getByText("Add Pizza"));
     await user.click(screen.getByText("Add Burger"));
@@ -123,7 +128,7 @@ describe("CartContext", () => {
 
   it("removes an item from the cart", async () => {
     const user = userEvent.setup();
-    renderWithProvider();
+    await act(async () => renderWithProvider());
 
     await user.click(screen.getByText("Add Pizza"));
     await user.click(screen.getByText("Add Burger"));
@@ -136,7 +141,7 @@ describe("CartContext", () => {
 
   it("updates quantity to a specific value", async () => {
     const user = userEvent.setup();
-    renderWithProvider();
+    await act(async () => renderWithProvider());
 
     await user.click(screen.getByText("Add Pizza"));
     await user.click(screen.getByText("Set Pizza Qty 5"));
@@ -148,7 +153,7 @@ describe("CartContext", () => {
 
   it("removes item when quantity is set to 0", async () => {
     const user = userEvent.setup();
-    renderWithProvider();
+    await act(async () => renderWithProvider());
 
     await user.click(screen.getByText("Add Pizza"));
     await user.click(screen.getByText("Set Pizza Qty 0"));
@@ -159,7 +164,7 @@ describe("CartContext", () => {
 
   it("clears all items from the cart", async () => {
     const user = userEvent.setup();
-    renderWithProvider();
+    await act(async () => renderWithProvider());
 
     await user.click(screen.getByText("Add Pizza"));
     await user.click(screen.getByText("Add Burger"));
@@ -172,7 +177,7 @@ describe("CartContext", () => {
 
   it("throws when useCart is called outside CartProvider", () => {
     // Suppress console.error for this test since React logs the error
-    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const spy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     expect(() => render(<CartConsumer />)).toThrow(
       "useCart must be used within a CartProvider"
@@ -183,7 +188,7 @@ describe("CartContext", () => {
 
   it("returns 'conflict' when adding item from a different restaurant", async () => {
     const user = userEvent.setup();
-    renderWithProvider();
+    await act(async () => renderWithProvider());
 
     await user.click(screen.getByText("Add Pizza"));     // restaurantId: "r1"
     await user.click(screen.getByText("Add Salad"));      // restaurantId: "r2" — blocked
@@ -195,7 +200,7 @@ describe("CartContext", () => {
 
   it("replaces cart when replaceCart is called", async () => {
     const user = userEvent.setup();
-    renderWithProvider();
+    await act(async () => renderWithProvider());
 
     await user.click(screen.getByText("Add Pizza"));
     expect(screen.getByTestId("total-items")).toHaveTextContent("1");
@@ -205,5 +210,76 @@ describe("CartContext", () => {
     expect(screen.getByTestId("total-items")).toHaveTextContent("1");
     expect(screen.queryByTestId("qty-pizza-1")).not.toBeInTheDocument();
     expect(screen.getByTestId("qty-salad-1")).toHaveTextContent("1");
+  });
+});
+
+describe("CartProvider localStorage logic", () => {
+  const cartKey = "cart";
+  const originalLocalStorage = global.localStorage;
+
+  let getItemSpy: ReturnType<typeof vi.spyOn>;
+  let setItemSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    // Mock localStorage
+    let store: Record<string, string> = {};
+    global.localStorage = {
+      getItem: vi.fn((key) => store[key] ?? null),
+      setItem: vi.fn((key, value) => { store[key] = value; }),
+      removeItem: vi.fn((key) => { delete store[key]; }),
+      clear: vi.fn(() => { store = {}; }),
+      key: vi.fn(),
+      length: 0,
+    } as any;
+    getItemSpy = vi.spyOn(global.localStorage, "getItem");
+    setItemSpy = vi.spyOn(global.localStorage, "setItem");
+  });
+
+  afterEach(() => {
+    global.localStorage = originalLocalStorage;
+    vi.restoreAllMocks();
+  });
+
+  it("hydrates cart from localStorage if present", async () => {
+    const saved = JSON.stringify({
+      items: [{ menuItem: pizza, quantity: 2 }],
+      restaurantId: pizza.restaurantId,
+    });
+    (global.localStorage.getItem as any).mockReturnValue(saved);
+
+    await act(async () => renderWithProvider());
+
+    expect(screen.getByTestId("qty-pizza-1")).toHaveTextContent("2");
+    expect(screen.getByTestId("total-items")).toHaveTextContent("2");
+    expect(screen.getByTestId("item-count")).toHaveTextContent("1");
+    expect(getItemSpy).toHaveBeenCalledWith(cartKey);
+  });
+
+  it("persists cart to localStorage on change", async () => {
+    const user = userEvent.setup();
+    await act(async () => renderWithProvider());
+
+    await user.click(screen.getByText("Add Pizza"));
+
+    expect(setItemSpy).toHaveBeenCalledWith(
+      cartKey,
+      expect.stringContaining('"items"')
+    );
+  });
+
+  it("falls back to empty cart if localStorage is missing or malformed", async () => {
+    // Malformed JSON
+    (global.localStorage.getItem as any).mockReturnValue("not-json");
+    let utils = await act(async () => renderWithProvider());
+
+    expect(screen.getByTestId("total-items")).toHaveTextContent("0");
+    utils.unmount();
+
+    // Missing keys
+    (global.localStorage.getItem as any).mockReturnValue(JSON.stringify({}));
+
+    await act(async () => renderWithProvider());
+
+    expect(screen.getByTestId("total-items")).toHaveTextContent("0");
   });
 });

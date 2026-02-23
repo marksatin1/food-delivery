@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { MenuItem, OrderItem } from "@food-delivery/shared";
 
 interface CartContextType {
@@ -20,6 +20,29 @@ const CartContext = createContext<CartContextType | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [items, setItems] = useState<OrderItem[]>([]);
+
+  // Hydrate cart from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cart');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setItems(parsed.items || []);
+          setRestaurantId(parsed.restaurantId || null)
+        } catch (error: any) {
+          console.warn(`Failed to parse cart from localStorage: ${error}`);
+        }
+      }
+    }
+  }, []);
+
+  // Persist cart to localStorage whenever items or restaurantId change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cart', JSON.stringify({ items, restaurantId }));
+    }
+  }, [items, restaurantId]);
 
   const addItem = useCallback((menuItem: MenuItem): 'added' | 'conflict' => {
     // Check if cart has items from a different restaurant

@@ -97,6 +97,8 @@ describe("CartSidebar", () => {
   });
 
   it("shows 'Your cart is empty' when cart has no items", () => {
+    if (global.localStorage?.clear) global.localStorage.clear();
+    
     renderSidebar(true);
     expect(screen.getByText("Your cart is empty")).toBeInTheDocument();
   });
