@@ -6,6 +6,7 @@ import { fetchApi } from "@/lib/api";
 import { useCart } from "./cart-context";
 import { Button } from "./ui/button";
 import type { Order } from "@food-delivery/shared";
+import { toast } from "sonner";
 
 export function CartSidebar({
   isOpen,
@@ -18,6 +19,55 @@ export function CartSidebar({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  function handleClearCart() {
+    toast(
+      'Are you sure you want to clear your cart?',
+      {
+        action: {
+          label: 'Yes, clear cart',
+          onClick: () => {
+            clearCart();
+            toast.success('Cart cleared!');
+          }
+        }
+      }
+    );
+  }
+
+  function handleDecreaseItem(itemId: string, name: string, quantity: number) {
+    if (quantity === 1) {
+      toast(
+        `Remove ${name} from your cart?`,
+        {
+          action: {
+            label: 'Remove',
+            onClick: () => {
+              updateQuantity(itemId, 0);
+              toast.success(`${name} removed from cart!`);
+            }
+          }
+        }
+      );
+    } else {
+      updateQuantity(itemId, quantity - 1);
+    }
+  }
+
+  function handleRemoveItem(itemId: string, name: string) {
+    toast(
+      `Remove ${name} from cart?`,
+      {
+        action: {
+          label: `Remove`,
+          onClick: () => {
+            removeItem(itemId);
+            toast.success(`${name} removed from cart!`)
+          }
+        }
+      }
+    );
+  }
 
   async function handleCheckout() {
     setLoading(true);
@@ -44,7 +94,8 @@ export function CartSidebar({
       clearCart();
       router.push(`/order-confirmation?id=${order.id}`);
     } catch (error: any) {
-      setError(error?.message || 'Failed to submit order');
+      setError(`Failed to submit order: ${error.message}`);
+      toast.error('Failed to submit order');
     } finally {
       setLoading(false);
     }
@@ -68,7 +119,7 @@ export function CartSidebar({
         {/* Header */}
         <div className="flex items-center justify-between border-b p-4">
           <h2 className="text-lg font-semibold">Your Cart</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" className='cursor-pointer' onClick={onClose}>
             ✕
           </Button>
         </div>
@@ -105,12 +156,8 @@ export function CartSidebar({
                       <Button
                         variant="outline"
                         size="icon-xs"
-                        onClick={() =>
-                          updateQuantity(
-                            orderItem.menuItem.id,
-                            orderItem.quantity - 1
-                          )
-                        }
+                        className="cursor-pointer"
+                        onClick={() => handleDecreaseItem(orderItem.menuItem.id, orderItem.menuItem.name, orderItem.quantity)}
                       >
                         −
                       </Button>
@@ -120,6 +167,7 @@ export function CartSidebar({
                       <Button
                         variant="outline"
                         size="icon-xs"
+                        className="cursor-pointer"
                         onClick={() =>
                           updateQuantity(
                             orderItem.menuItem.id,
@@ -140,8 +188,8 @@ export function CartSidebar({
                     <Button
                       variant="ghost"
                       size="xs"
-                      className="mt-1 text-red-500 hover:text-red-700"
-                      onClick={() => removeItem(orderItem.menuItem.id)}
+                      className="mt-1 text-red-500 hover:text-red-700 cursor-pointer"
+                      onClick={() => handleRemoveItem(orderItem.menuItem.id, orderItem.menuItem.name)}
                     >
                       Remove
                     </Button>
@@ -163,15 +211,15 @@ export function CartSidebar({
               Delivery fee and tax calculated at checkout
             </p>
 
-            <Button className="mt-4 w-full" onClick={handleCheckout} disabled={loading}>
+            <Button className="mt-4 w-full cursor-pointer" onClick={handleCheckout} disabled={loading}>
               {loading ? "Placing order..." : `Checkout · $${subtotal.toFixed(2)}`}
             </Button>
             {error && <p className="mt-2 text-red-500 text-sm">{error}</p>}
 
             <Button
               variant="ghost"
-              className="mt-2 w-full text-zinc-500"
-              onClick={clearCart}
+              className="mt-2 w-full text-zinc-500 cursor-pointer"
+              onClick={() => handleClearCart()}
             >
               Clear Cart
             </Button>

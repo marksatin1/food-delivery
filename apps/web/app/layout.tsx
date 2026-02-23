@@ -4,6 +4,7 @@ import Link from "next/link";
 import "./globals.css";
 import { CartProvider } from "@/components/cart-context";
 import { CartButton } from "@/components/cart-button";
+import { Toaster } from "sonner";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
 
           {/* Page content */}
           <main className="mx-auto max-w-7xl px-4 py-8">
+            <Toaster position="top-center"/>
             {children}
           </main>
 

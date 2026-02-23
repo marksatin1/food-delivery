@@ -4,6 +4,7 @@ import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { useCart } from "./cart-context";
+import { toast } from "sonner";
 import type { MenuItem } from "@food-delivery/shared";
 
 export function MenuItemCard({ item }: { item: MenuItem }) {
@@ -12,12 +13,20 @@ export function MenuItemCard({ item }: { item: MenuItem }) {
   function handleAddToCart() {
     const result = addItem(item);
     if (result === 'conflict') {
-      const confirmed = window.confirm(
-        "You already have items from another restaurant. Start a new order?"
+      toast(
+        'You already have items from another restaurant in your cart. Start a new order?',
+        {
+          action : {
+            label: 'Yes, start a new order!',
+            onClick: () => {
+              replaceCart(item);
+              toast.success("New order started!")
+            }
+          }
+        }
       );
-      if (confirmed) {
-        replaceCart(item);
-      }
+    } else if (result === 'added') {
+      toast.success(`${item.name} added to cart!`);
     }
   }
 

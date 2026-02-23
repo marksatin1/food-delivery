@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CartSidebar } from "./cart-sidebar";
 import { CartProvider, useCart } from "./cart-context";
+import { toast } from "sonner";
 import type { MenuItem } from "@food-delivery/shared";
 
 const mockPizza: MenuItem = {
@@ -17,6 +18,18 @@ const mockPizza: MenuItem = {
   isAvailable: true,
 };
 
+// Mock Sonner (toast library)
+vi.mock('sonner', () => ({
+  toast: Object.assign(vi.fn(), {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+  }),
+}));
+
 // Mock useRouter
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -25,6 +38,8 @@ vi.mock("next/navigation", () => ({
     prefetch: vi.fn(),
   }),
 }));
+
+const toastMock: any = toast;
 
 // Helper: render sidebar with items already in the cart
 function renderSidebar(isOpen: boolean, onClose = vi.fn()) {
@@ -48,6 +63,39 @@ function AddItemHelper() {
 }
 
 describe("CartSidebar", () => {
+  it("shows toast and removes item when decreasing quantity to 0", async () => {
+    const user = userEvent.setup();
+    renderSidebar(true);
+
+    await user.click(screen.getByText("Test Add"));
+    expect(screen.getByText("Margherita Pizza")).toBeInTheDocument();
+
+    // Click the minus button to decrease quantity to 0 (should trigger toast)
+    await user.click(screen.getByText("−"));
+
+    // Simulate toast action confirmation
+    const lastCall = toastMock.mock.calls[toastMock.mock.calls.length - 1];
+    const toastOptions = lastCall[1];
+    toastOptions.action.onClick();
+
+    expect(toastMock.success).toHaveBeenCalledWith("Margherita Pizza removed from cart!");
+  });
+
+  it("shows toast confirmation when clearing cart", async () => {
+    const user = userEvent.setup();
+    renderSidebar(true);
+
+    await user.click(screen.getByText("Test Add"));
+    expect(screen.getByText("Margherita Pizza")).toBeInTheDocument();
+
+    await user.click(screen.getByText("Clear Cart"));
+
+    // The toast should be called with the confirmation dialog
+    const lastCall = toastMock.mock.calls[toastMock.mock.calls.length - 1];
+    expect(lastCall[0]).toBe("Are you sure you want to clear your cart?");
+    expect(lastCall[1].action.label).toBe("Yes, clear cart");
+  });
+
   it("shows 'Your cart is empty' when cart has no items", () => {
     renderSidebar(true);
     expect(screen.getByText("Your cart is empty")).toBeInTheDocument();
@@ -114,7 +162,13 @@ describe("CartSidebar", () => {
     expect(screen.getByText("Margherita Pizza")).toBeInTheDocument();
 
     await user.click(screen.getByText("Clear Cart"));
-    expect(screen.getByText("Your cart is empty")).toBeInTheDocument();
+
+    const lastCall = toastMock.mock.calls[toastMock.mock.calls.length - 1];
+    const toastOptions = lastCall[1];
+    toastOptions.action.onClick();
+
+    // Assert that toast.success was called with the correct message
+    expect(toastMock.success).toHaveBeenCalledWith("Cart cleared!");
   });
 
   it("removes item when Remove is clicked", async () => {
@@ -125,6 +179,13 @@ describe("CartSidebar", () => {
     expect(screen.getByText("Margherita Pizza")).toBeInTheDocument();
 
     await user.click(screen.getByText("Remove"));
-    expect(screen.getByText("Your cart is empty")).toBeInTheDocument();
+
+    // Always use the toastMock type assertion
+    const lastCall = toastMock.mock.calls[toastMock.mock.calls.length - 1];
+    const toastOptions = lastCall[1];
+    toastOptions.action.onClick();
+
+    // Assert that toast.success was called with the correct message
+    expect(toastMock.success).toHaveBeenCalledWith("Margherita Pizza removed from cart!");
   });
 });
