@@ -14,6 +14,7 @@ export async function fetchApi<T>(
 
   const res = await fetch(url, {
     cache: 'no-store',
+    credentials: 'include',
     ...options
   });
 
