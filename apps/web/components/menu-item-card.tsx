@@ -3,7 +3,7 @@
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { useCart } from "./cart-context";
+import { useCart } from "../context/cart-context";
 import { toast } from "sonner";
 import type { MenuItem } from "@food-delivery/shared";
 
@@ -16,7 +16,7 @@ export function MenuItemCard({ item }: { item: MenuItem }) {
       toast(
         'You already have items from another restaurant in your cart. Start a new order?',
         {
-          action : {
+          action: {
             label: 'Yes, start a new order!',
             onClick: () => {
               replaceCart(item);

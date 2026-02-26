@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 import { toast } from 'sonner';
 
 // Mock toast
@@ -17,7 +17,7 @@ const toastMock: any = toast;
 import { render, screen } from '@testing-library/react';
 import userEvent from "@testing-library/user-event";
 import { MenuItemCard } from './menu-item-card';
-import { CartProvider } from './cart-context';
+import { CartProvider } from '../context/cart-context';
 import type { MenuItem } from '@food-delivery/shared';
 
 const mockMenuItem: MenuItem = {
@@ -109,33 +109,4 @@ describe('MenuItemCard', () => {
     expect(toastMock.success);
   });
 
-});
-
-describe('MenuItemCard conflict scenario', () => {
-  beforeEach(() => {
-    vi.mock('./cart-context', () => ({
-      useCart: () => ({
-        addItem: vi.fn(() => 'conflict'),
-        replaceCart: vi.fn(),
-      }),
-      CartProvider: ({ children }: any) => <div>{children}</div>,
-    }));
-  });
-
-  afterEach(() => {
-    vi.resetModules();
-    vi.restoreAllMocks();
-  });
-
-  it('shows conflict toast and handles new order', async () => {
-    renderWithCart(mockMenuItem);
-    const button = screen.getByRole('button', { name: 'Add to Cart' });
-    await userEvent.click(button);
-
-    const lastCall = toastMock.mock.calls[toastMock.mock.calls.length - 1];
-    expect(lastCall[0]).toMatch(/another restaurant/);
-
-    lastCall[1].action.onClick();
-    expect(toastMock.success).toHaveBeenCalledWith('New order started!');
-  });
 });

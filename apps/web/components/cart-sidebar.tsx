@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchApi } from "@/lib/api";
-import { useCart } from "./cart-context";
+import { useCart } from "../context/cart-context";
 import { Button } from "./ui/button";
 import type { Order } from "@food-delivery/shared";
 import { toast } from "sonner";

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import Link from "next/link";
-import "./globals.css";
-import { CartProvider } from "@/components/cart-context";
-import { CartButton } from "@/components/cart-button";
+import { CartProvider } from "@/context/cart-context";
+import { SessionProvider } from "@/context/session-context";
 import { Toaster } from "sonner";
+import Navbar from "@/components/navbar";
+import "./globals.css";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -24,30 +24,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geist.variable} font-sans antialiased`}>
-        <CartProvider>
-          
-          {/* Navigation */}
-          <header className="sticky top-0 z-50 border-b bg-white">
-            <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-              <Link href="/" className="text-2xl font-bold text-red-600">
-                FoodFrenzy
-              </Link>
-              <div className="flex items-center gap-4">
-                <Link href="/" className="text-lg font-medium hover:text-red-600">
-                  Restaurants
-                </Link>
-                <CartButton />
-              </div>
-            </nav>
-          </header>
+        <SessionProvider>
+          <CartProvider>
 
-          {/* Page content */}
-          <main className="mx-auto max-w-7xl px-4 py-8">
-            <Toaster position="top-center"/>
-            {children}
-          </main>
+            {/* Navigation */}
+            <header className="sticky top-0 z-50 border-b bg-white">
+              <Navbar />
+            </header>
 
-        </CartProvider>
+            {/* Page content */}
+            <main className="mx-auto max-w-7xl px-4 py-8">
+              <Toaster position="top-center" />
+              {children}
+            </main>
+
+          </CartProvider>
+        </SessionProvider>
       </body>
     </html>
   );

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CartSidebar } from "./cart-sidebar";
-import { CartProvider, useCart } from "./cart-context";
+import { CartProvider, useCart } from "../context/cart-context";
 import { toast } from "sonner";
 import type { MenuItem } from "@food-delivery/shared";
 
@@ -98,7 +98,7 @@ describe("CartSidebar", () => {
 
   it("shows 'Your cart is empty' when cart has no items", () => {
     if (global.localStorage?.clear) global.localStorage.clear();
-    
+
     renderSidebar(true);
     expect(screen.getByText("Your cart is empty")).toBeInTheDocument();
   });

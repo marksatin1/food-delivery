@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CartButton } from "./cart-button";
-import { CartProvider, useCart } from "./cart-context";
+import { CartProvider, useCart } from "../context/cart-context";
 import type { MenuItem } from "@food-delivery/shared";
 
 const mockItem: MenuItem = {
